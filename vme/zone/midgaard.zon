@@ -1001,8 +1001,7 @@ external
    getfrom_safe(prisoner : unitptr);
    set_char_flags@justice(char : unitptr, setting : string);
 var
-   sn : string;
-   sz : string;
+   sname : string;
    jd : unitptr;
    id : string;
    juris : string; 
@@ -1013,17 +1012,17 @@ code
 {
    heartbeat := PULSE_SEC * SECS_PER_MUD_HOUR;
    juris := self.outside.zoneidx;
-   sn := self.outside.nameidx;
-   sz := self.outside.zoneidx;
+   sname := self.outside.symname; // Get the jail symname
+
    jd := findsymbolic("database@justice");
    id := "$reward "+ self.symname + " " + itoa(self.idx) + " "+ juris;
    k := "$reward "+ juris;
      
-// Change player arrest descr to reflect that the char is in jail.
+   // Change player arrest descr to reflect that the char is in jail.
    //
-jd := findsymbolic("database@justice");
+   jd := findsymbolic("database@justice");
    
-if( "$reward" in self.extra)
+   if( "$reward" in self.extra)
    {
       jd.extra.[id].names.[4] := "-1";
       self.extra.[k].names.[4] := "-1";
@@ -1033,10 +1032,9 @@ if( "$reward" in self.extra)
  
   :loop:
    pause;
-   
-if (sn != self.outside.nameidx)
-   {  
-      //player has escaped from jail
+   if (sname != self.outside.symname)
+   {
+      // Player has escaped from jail
       jd := findsymbolic("database@justice");
       jd.extra.[id].names.[4] := "65";
       self.extra.[k].names.[4] := "65";
@@ -1047,6 +1045,7 @@ if (sn != self.outside.nameidx)
       log("Jailbreak: "+self.name+" has escaped from the "+ juris +" jail."); 
       quit;
    }
+
    if("$reward" in self.extra)
    {
       jd := findsymbolic("database@justice");
@@ -1084,7 +1083,7 @@ if (sn != self.outside.nameidx)
    act("Your term is over! You are thrown out of the jail and sent home.",
        A_ALWAYS, self, null, null, TO_CHAR);
    getfrom_safe(self);
-   link(self, findroom("accuse_room@" + sz));
+   link(self, findroom("accuse_room@" + juris));
    rem_db_entry@justice(self, "$reward", juris);
    set_char_flags@justice(self, "arrest");
    quit;
